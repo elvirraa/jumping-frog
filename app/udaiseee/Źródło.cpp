@@ -24,6 +24,7 @@ typedef struct
 {
 	int X;
 	int Y;
+	bool moveActive;
 } Frog;
 
 
@@ -174,7 +175,10 @@ void dB(Frog* p, Car* c, Stork* s, char (*b)[W], int fC, int cC, int fnC, int sC
 						if (!((i == 3 && (j == 5 || j == 6 || j == 7)) || (i == 4 && (j == 18 || j == 19 || j == 20)))) {
 							// Different colors for specific rows
 							if (i == 1 || i == 3)  _cprintf("\033[33mX\033[0m");
-							else if (i == 4 || i == 6) _cprintf("\033[96mX\033[0m");
+							else if (i == 4 || i == 6) {
+								if (p[0].moveActive) _cprintf("\033[96mX\033[0m");
+								else _cprintf("X");
+							}
 							else _cprintf("\033[%dmX\033[0m", cC);
 							tempBoard[i][j] = 'X';
 							isC = true;
@@ -323,7 +327,12 @@ void uSt(int frame, Stork* bird, Frog* player, int level) {
 bool uPl(char input, Frog* player) {
 	int tempX = 0;
 	int tempY = 0;
-	if (input == 'a') {
+	// Friendly car move player activate/deactivate
+	if (input == 'e') {
+		player[0].moveActive = !(player[0].moveActive);
+		return false;
+	}
+	else if (input == 'a') {
 		// Check if the frog is at the left border then move left
 		if (player[0].X == 1) {
 			tempX = player[0].X;
@@ -352,7 +361,7 @@ bool uPl(char input, Frog* player) {
 	}
 	// Move the frog down
 	else if (input == 's') {
-		if (player[0].Y == H - 2) {
+		if (player[0].Y == H - 1) {
 			tempY = player[0].Y;
 			tempX = player[0].X;
 		}
@@ -384,6 +393,7 @@ bool chC(Frog* player, Car* cars, int l) {
 		if (l == 1 && (i == 7 || i == 5 || i == 3)) return false;
 		// Check when frog meets the friendly car
 		if (cars[3].X == player[0].X && player[0].Y == 4 || (cars[5].X == player[0].X && player[0].Y == 6)) {
+			if (!player[0].moveActive) return false;
 			int newX = 0;
 			// Generates new coordinates so that they are not on obstacles
 			do {
@@ -492,6 +502,7 @@ void showReplay() {
 int main() {
 	// Initialize the positions and other parameters
 	Frog plr;
+	plr.moveActive = false;
 	plr.X = W / 2;
 	plr.Y = H - 1;
 	Car cr[7];
